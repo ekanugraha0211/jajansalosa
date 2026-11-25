@@ -122,6 +122,18 @@ export function AdminDashboardPage() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveTab('branding')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-colors ${
+                activeTab === 'branding'
+                  ? 'bg-[#D95D24] text-white'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+            >
+              <Palette className="w-3.5 h-3.5" />
+              <span>Logo &amp; Ikon</span>
+            </button>
             <Link
               to="/"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold"
@@ -206,7 +218,7 @@ export function AdminDashboardPage() {
         </section>
 
         {/* Tabs */}
-        <nav className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-[#EFE2D3]">
+        <nav className="flex flex-wrap items-center gap-2 pb-1 border-b border-[#EFE2D3]">
           {(
             [
               { id: 'overview', label: 'Ringkasan', icon: LayoutDashboard },
@@ -223,7 +235,7 @@ export function AdminDashboardPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-sm font-bold border-b-2 transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer ${
                   active
                     ? 'border-[#D95D24] text-[#D95D24] bg-white'
                     : 'border-transparent text-[#6E4934] hover:text-[#2C1810]'
@@ -237,7 +249,9 @@ export function AdminDashboardPage() {
         </nav>
 
         {/* Tab Content */}
-        {loading ? (
+        {activeTab === 'branding' ? (
+          <AdminBrandingTab />
+        ) : loading ? (
           <div className="bg-white rounded-2xl border border-[#EFE2D3] p-10 text-center text-sm text-[#7D5A44]">
             Memuat data dashboard...
           </div>
@@ -300,7 +314,27 @@ export function AdminDashboardPage() {
               )}
             </div>
 
-            <div className="lg:col-span-5 bg-white rounded-2xl border border-[#EFE2D3] p-5 space-y-4">
+            <div className="lg:col-span-5 space-y-5">
+              <div className="bg-white rounded-2xl border border-[#EFE2D3] p-5 flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="font-bold text-base text-[#2C1810]">
+                    Tampilan Toko (Logo &amp; Ikon Tab)
+                  </h2>
+                  <p className="text-xs text-[#7D5A44] mt-0.5">
+                    Ubah logo website dan ikon tab browser (favicon).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('branding')}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FDF1E6] hover:bg-[#FCE3CE] text-[#B44312] text-xs font-bold cursor-pointer"
+                >
+                  <Palette className="w-4 h-4" />
+                  Ubah
+                </button>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-[#EFE2D3] p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-bold text-base text-[#2C1810]">
                   Stok Produk Menipis (&le; 10)
@@ -337,6 +371,7 @@ export function AdminDashboardPage() {
                     ))}
                 </div>
               )}
+              </div>
             </div>
           </div>
         ) : activeTab === 'products' ? (
@@ -351,10 +386,8 @@ export function AdminDashboardPage() {
             products={products}
             onRefresh={loadAllData}
           />
-        ) : activeTab === 'orders' ? (
-          <AdminOrdersTab orders={orders} onRefresh={loadAllData} />
         ) : (
-          <AdminBrandingTab />
+          <AdminOrdersTab orders={orders} onRefresh={loadAllData} />
         )}
       </main>
     </div>
