@@ -121,6 +121,26 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 
+-- Hak akses minimum tingkat tabel (tetap dibatasi oleh RLS)
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
+REVOKE ALL ON public.admins FROM anon, authenticated;
+GRANT SELECT ON public.admins TO authenticated;
+
+REVOKE ALL ON public.categories FROM anon, authenticated;
+GRANT SELECT ON public.categories TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.categories TO authenticated;
+
+REVOKE ALL ON public.products FROM anon, authenticated;
+GRANT SELECT ON public.products TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.products TO authenticated;
+
+REVOKE ALL ON public.orders FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
+
+REVOKE ALL ON public.order_items FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.order_items TO authenticated;
+
 DROP POLICY IF EXISTS "admins_select_own" ON public.admins;
 CREATE POLICY "admins_select_own"
   ON public.admins FOR SELECT
@@ -468,3 +488,87 @@ VALUES
   ((SELECT id FROM cat WHERE slug = 'minuman-segar'), 'Es Cendol Dawet Gula Merah', 'es-cendol-dawet-gula-merah', 'Dawet pandan kenyal dipadukan dengan santan gurih dan sirup gula aren kental wangi nangka. Botol higienis 350ml.', 14000, 28, 'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=900&q=80', true, false),
   ((SELECT id FROM cat WHERE slug = 'paket-hampers'), 'Box Jajanan Pasar Tampah Mini', 'box-jajanan-pasar-tampah-mini', 'Paket berisi 20 pcs aneka jajanan pasar terbaik (klepon, kue lumpur, risol mayo, pastel, dan lemper) cocok untuk rapat atau kumpul keluarga.', 75000, 15, 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=900&q=80', true, true)
 ON CONFLICT (slug) DO NOTHING;
+
+-- 5. PENGATURAN LOGO & IKON TAB (STORE SETTINGS)
+CREATE TABLE IF NOT EXISTS public.store_settings (
+  id text PRIMARY KEY DEFAULT 'default' CHECK (id = 'default'),
+  store_name text NOT NULL DEFAULT 'Jajan Salosa' CHECK (char_length(trim(store_name)) >= 2),
+  logo_url text,
+  favicon_url text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+DROP TRIGGER IF EXISTS trg_store_settings_updated_at ON public.store_settings;
+CREATE TRIGGER trg_store_settings_updated_at
+  BEFORE UPDATE ON public.store_settings
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+ALTER TABLE public.store_settings ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON public.store_settings FROM anon, authenticated;
+GRANT SELECT ON public.store_settings TO anon, authenticated;
+GRANT INSERT, UPDATE ON public.store_settings TO authenticated;
+
+DROP POLICY IF EXISTS "store_settings_public_read" ON public.store_settings;
+CREATE POLICY "store_settings_public_read"
+  ON public.store_settings FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
+DROP POLICY IF EXISTS "store_settings_admin_insert" ON public.store_settings;
+CREATE POLICY "store_settings_admin_insert"
+  ON public.store_settings FOR INSERT
+  TO authenticated
+  WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "store_settings_admin_update" ON public.store_settings;
+CREATE POLICY "store_settings_admin_update"
+  ON public.store_settings FOR UPDATE
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+INSERT INTO public.store_settings (id, store_name, logo_url, favicon_url)
+VALUES ('default', 'Jajan Salosa', NULL, NULL)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'branding',
+  'branding',
+  true,
+  2097152,
+  ARRAY[
+    'image/png',
+    'image/jpeg',
+    'image/webp',
+    'image/svg+xml',
+    'image/x-icon',
+    'image/vnd.microsoft.icon'
+  ]
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "branding_public_read" ON storage.objects;
+CREATE POLICY "branding_public_read"
+  ON storage.objects FOR SELECT TO anon, authenticated
+  USING (bucket_id = 'branding');
+
+DROP POLICY IF EXISTS "branding_admin_insert" ON storage.objects;
+CREATE POLICY "branding_admin_insert"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'branding' AND public.is_admin());
+
+DROP POLICY IF EXISTS "branding_admin_update" ON storage.objects;
+CREATE POLICY "branding_admin_update"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'branding' AND public.is_admin())
+  WITH CHECK (bucket_id = 'branding' AND public.is_admin());
+
+DROP POLICY IF EXISTS "branding_admin_delete" ON storage.objects;
+CREATE POLICY "branding_admin_delete"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'branding' AND public.is_admin());

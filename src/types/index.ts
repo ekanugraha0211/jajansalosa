@@ -121,3 +121,17 @@ export interface CategoryFormValues {
   description: string;
   sort_order: number;
 }
+
+export interface StoreSettings {
+  id: string;
+  store_name: string;
+  logo_url: string | null;
+  favicon_url: string | null;
+  updated_at?: string;
+}
+
+export interface StoreSettingsFormValues {
+  store_name: string;
+  logo_url: string | null;
+  favicon_url: string | null;
+}

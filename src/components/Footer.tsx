@@ -1,9 +1,11 @@
 import { MessageCircle, ShieldCheck, UtensilsCrossed } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { STORE_NAME, STORE_WHATSAPP } from '../lib/supabase';
+import { useStoreSettings } from '../context/StoreSettingsContext';
+import { STORE_WHATSAPP } from '../lib/supabase';
 import { normalizeWhatsAppNumber } from '../lib/format';
 
 export function Footer() {
+  const { settings } = useStoreSettings();
   const waHref = `https://wa.me/${normalizeWhatsAppNumber(STORE_WHATSAPP)}`;
 
   return (
@@ -11,11 +13,19 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-[#D95D24] text-white flex items-center justify-center">
-              <UtensilsCrossed className="w-5 h-5" />
-            </div>
+            {settings.logo_url ? (
+              <img
+                src={settings.logo_url}
+                alt={`Logo ${settings.store_name}`}
+                className="w-9 h-9 rounded-xl object-contain bg-white p-0.5"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-[#D95D24] text-white flex items-center justify-center">
+                <UtensilsCrossed className="w-5 h-5" />
+              </div>
+            )}
             <span className="font-[var(--font-display)] text-xl font-bold text-white">
-              {STORE_NAME}
+              {settings.store_name}
             </span>
           </div>
           <p className="text-sm text-[#D7C3B2] leading-relaxed">
@@ -61,7 +71,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-[#43271C] py-4 text-center text-xs text-[#B69D8B]">
-        &copy; {new Date().getFullYear()} {STORE_NAME}. Semua hak dilindungi.
+        &copy; {new Date().getFullYear()} {settings.store_name}. Semua hak dilindungi.
       </div>
     </footer>
   );

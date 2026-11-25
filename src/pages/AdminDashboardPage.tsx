@@ -5,15 +5,18 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  Palette,
   RefreshCw,
   ShoppingCart,
   TrendingUp,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AdminBrandingTab } from '../components/admin/AdminBrandingTab';
 import { AdminCategoriesTab } from '../components/admin/AdminCategoriesTab';
 import { AdminOrdersTab } from '../components/admin/AdminOrdersTab';
 import { AdminProductsTab } from '../components/admin/AdminProductsTab';
 import { useAuth } from '../context/AuthContext';
+import { useStoreSettings } from '../context/StoreSettingsContext';
 import { useToast } from '../context/ToastContext';
 import {
   ORDER_STATUS_LABELS,
@@ -21,15 +24,15 @@ import {
   formatDateTime,
   formatRupiah,
 } from '../lib/format';
-import { STORE_NAME } from '../lib/supabase';
 import { fetchCategories, fetchProducts } from '../services/catalogService';
 import { fetchAdminOrders } from '../services/orderService';
 import type { Category, Order, Product } from '../types';
 
-type AdminTab = 'overview' | 'products' | 'categories' | 'orders';
+type AdminTab = 'overview' | 'products' | 'categories' | 'orders' | 'branding';
 
 export function AdminDashboardPage() {
   const { adminProfile, signOut } = useAuth();
+  const { settings } = useStoreSettings();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -100,13 +103,22 @@ export function AdminDashboardPage() {
       {/* Admin Topbar */}
       <header className="sticky top-0 z-30 bg-[#2C1810] text-white border-b border-[#462619]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div>
-            <span className="font-[var(--font-display)] font-bold text-lg block leading-tight">
-              Admin {STORE_NAME}
-            </span>
-            <span className="text-[11px] text-amber-200/80">
-              {adminProfile?.full_name || adminProfile?.email}
-            </span>
+          <div className="flex items-center gap-3">
+            {settings.logo_url && (
+              <img
+                src={settings.logo_url}
+                alt={`Logo ${settings.store_name}`}
+                className="w-9 h-9 rounded-xl object-contain bg-white p-0.5 shrink-0"
+              />
+            )}
+            <div>
+              <span className="font-[var(--font-display)] font-bold text-lg block leading-tight">
+                Admin {settings.store_name}
+              </span>
+              <span className="text-[11px] text-amber-200/80">
+                {adminProfile?.full_name || adminProfile?.email}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -201,6 +213,7 @@ export function AdminDashboardPage() {
               { id: 'products', label: `Produk (${products.length})`, icon: Package },
               { id: 'categories', label: `Kategori (${categories.length})`, icon: FolderTree },
               { id: 'orders', label: `Pesanan (${orders.length})`, icon: ShoppingCart },
+              { id: 'branding', label: 'Logo & Ikon', icon: Palette },
             ] as const
           ).map((tab) => {
             const Icon = tab.icon;
@@ -338,8 +351,10 @@ export function AdminDashboardPage() {
             products={products}
             onRefresh={loadAllData}
           />
-        ) : (
+        ) : activeTab === 'orders' ? (
           <AdminOrdersTab orders={orders} onRefresh={loadAllData} />
+        ) : (
+          <AdminBrandingTab />
         )}
       </main>
     </div>

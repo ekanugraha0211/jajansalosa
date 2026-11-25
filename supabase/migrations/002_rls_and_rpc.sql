@@ -29,6 +29,26 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 
+-- Hak akses minimum tingkat tabel (tetap dibatasi oleh RLS di bawah)
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
+REVOKE ALL ON public.admins FROM anon, authenticated;
+GRANT SELECT ON public.admins TO authenticated;
+
+REVOKE ALL ON public.categories FROM anon, authenticated;
+GRANT SELECT ON public.categories TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.categories TO authenticated;
+
+REVOKE ALL ON public.products FROM anon, authenticated;
+GRANT SELECT ON public.products TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.products TO authenticated;
+
+REVOKE ALL ON public.orders FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
+
+REVOKE ALL ON public.order_items FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.order_items TO authenticated;
+
 -- Kebijakan tabel ADMINS (hanya bisa baca baris milik sendiri; tidak bisa dimodifikasi klien)
 DROP POLICY IF EXISTS "admins_select_own" ON public.admins;
 CREATE POLICY "admins_select_own"

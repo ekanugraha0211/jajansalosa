@@ -1,10 +1,11 @@
 import { ShoppingBag, UtensilsCrossed } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { STORE_NAME } from '../lib/supabase';
+import { useStoreSettings } from '../context/StoreSettingsContext';
 
 export function Navbar() {
   const { totalItems } = useCart();
+  const { settings } = useStoreSettings();
   const location = useLocation();
 
   const isHome = location.pathname === '/';
@@ -14,12 +15,20 @@ export function Navbar() {
     <header className="sticky top-0 z-40 bg-[#FFFBF5]/95 backdrop-blur-md border-b border-[#EEDEC9]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D95D24] to-[#B44312] text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-            <UtensilsCrossed className="w-5 h-5" />
-          </div>
+          {settings.logo_url ? (
+            <img
+              src={settings.logo_url}
+              alt={`Logo ${settings.store_name}`}
+              className="w-10 h-10 rounded-xl object-contain bg-white border border-[#EEDEC9] p-0.5 shadow-sm group-hover:scale-105 transition-transform"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D95D24] to-[#B44312] text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+              <UtensilsCrossed className="w-5 h-5" />
+            </div>
+          )}
           <div className="leading-tight">
             <span className="font-[var(--font-display)] font-bold text-lg sm:text-xl text-[#2C1810] tracking-tight block">
-              {STORE_NAME}
+              {settings.store_name}
             </span>
             <span className="text-[11px] font-medium text-[#8C5A3C] hidden sm:block">
               Jajanan Segar Setiap Hari

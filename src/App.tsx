@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar';
 import { ProtectedAdminRoute } from './components/ProtectedAdminRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { StoreSettingsProvider } from './context/StoreSettingsContext';
 import { ToastProvider } from './context/ToastContext';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
@@ -29,29 +30,31 @@ export function App() {
   return (
     <BrowserRouter>
       <ToastProvider>
-        <AuthProvider>
-          <CartProvider>
-            <Routes>
-              <Route element={<StoreLayout />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/produk/:slug" element={<ProductDetailPage />} />
-                <Route path="/keranjang" element={<CartCheckoutPage />} />
-              </Route>
+        <StoreSettingsProvider>
+          <AuthProvider>
+            <CartProvider>
+              <Routes>
+                <Route element={<StoreLayout />}>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/produk/:slug" element={<ProductDetailPage />} />
+                  <Route path="/keranjang" element={<CartCheckoutPage />} />
+                </Route>
 
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedAdminRoute>
-                    <AdminDashboardPage />
-                  </ProtectedAdminRoute>
-                }
-              />
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedAdminRoute>
+                      <AdminDashboardPage />
+                    </ProtectedAdminRoute>
+                  }
+                />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </CartProvider>
-        </AuthProvider>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </CartProvider>
+          </AuthProvider>
+        </StoreSettingsProvider>
       </ToastProvider>
     </BrowserRouter>
   );
