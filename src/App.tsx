@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { FloatingCartBar } from './components/FloatingCartBar';
 import { Footer } from './components/Footer';
@@ -56,6 +57,7 @@ export function App() {
           </AuthProvider>
         </StoreSettingsProvider>
       </ToastProvider>
+      <Analytics />
     </BrowserRouter>
   );
 }
